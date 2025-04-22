@@ -1,50 +1,80 @@
-// index.js
+/**
+ * Archivo principal del servidor backend
+ * Configura y ejecuta el servidor Express con MongoDB
+ */
+
+// Importación de dependencias
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
-const cors = require('cors'); // Para habilitar CORS
+const cors = require('cors');
 
-// Importar las rutas
+// Importación de rutas
 const userRoutes = require('./routes/userRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 const historyRoutes = require('./routes/historyRoutes');
 const faqRoutes = require('./routes/faqRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+
+// Inicialización de la aplicación Express
 const app = express();
-app.use(express.json()); // Para que Express pueda procesar datos JSON
 
-// Habilitar CORS
-app.use(cors()); // Esto permite que el frontend pueda hacer solicitudes al backend
+// Middleware global
+app.use(express.json()); // Permite procesar datos JSON en las solicitudes
+app.use(cors()); // Habilita CORS para permitir solicitudes desde el frontend
 
-// Conectar a MongoDB
+/**
+ * Conexión a la base de datos MongoDB
+ * Utiliza la URI definida en las variables de entorno
+ */
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Conectado a MongoDB'))
-  .catch((err) => console.error('Error al conectar a MongoDB:', err));
+  .then(() => console.log('✅ Conectado a MongoDB'))
+  .catch((err) => console.error('❌ Error al conectar a MongoDB:', err));
 
-// Registrar las rutas
-app.use('/api/users', userRoutes);
-app.use('/api/rooms', roomRoutes);
-app.use('/api/reservations', reservationRoutes);
-app.use('/api/history', historyRoutes);
-app.use('/api/faq', faqRoutes);
+/**
+ * Registro de rutas de la API
+ * Cada ruta está prefijada con /api para mejor organización
+ */
+app.use('/api/users', userRoutes);      // Rutas para gestión de usuarios
+app.use('/api/rooms', roomRoutes);      // Rutas para gestión de salas
+app.use('/api/reservations', reservationRoutes); // Rutas para gestión de reservas
+app.use('/api/history', historyRoutes);  // Rutas para historial de acciones
+app.use('/api/faq', faqRoutes);         // Rutas para preguntas frecuentes
+app.use('/api/admin', adminRoutes);     // Rutas para administradores
 
-// Middleware para manejo de errores (debe ir después de las rutas)
+/**
+ * Middleware para manejo de errores
+ * Captura y procesa los errores de forma centralizada
+ */
 const errorHandler = (err, req, res, next) => {
-  console.error(err);  // Opcional: puedes registrar el error en la consola
+  console.error('❌ Error:', err);
 
-  // Si el error tiene un statusCode, lo usa, si no, usa 500
   const statusCode = err.statusCode || 500;
-  const message = err.message || 'Algo salió mal en el servidor';
+  const message = err.message || 'Error interno del servidor';
 
   res.status(statusCode).json({
     success: false,
     message: message,
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };
 
-// Registrar el middleware de errores (después de las rutas)
+// Registro del middleware de errores
 app.use(errorHandler);
 
-// Configurar el puerto de la aplicación
+/**
+ * Inicio del servidor
+ * Escucha en el puerto definido en las variables de entorno o 5000 por defecto
+ */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log('📡 Rutas disponibles:');
+  console.log('- /api/users');
+  console.log('- /api/rooms');
+  console.log('- /api/reservations');
+  console.log('- /api/history');
+  console.log('- /api/faq');
+  console.log('- /api/admin');
+});
