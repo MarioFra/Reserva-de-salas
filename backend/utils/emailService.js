@@ -32,56 +32,39 @@ const formatearHora = (hora) => {
 };
 
 // Función para enviar confirmación de reserva
-const enviarConfirmacionReserva = async (reserva, cambios = null) => {
+const enviarConfirmacionReserva = async (reserva, esActualizacion = false) => {
     try {
-        const fechaFormateada = formatearFecha(reserva.fecha);
-        const horaInicio = formatearHora(reserva.horaInicio);
-        const horaFin = formatearHora(reserva.horaFin);
+        // Verificando disponibilidad
 
-        let cuerpoCorreo = `
-            <h2>Confirmación de Reserva</h2>
-            <p>Hola ${reserva.nombre},</p>
-            <p>${cambios ? 'Tu reserva ha sido actualizada' : 'Tu reserva ha sido confirmada'} con los siguientes detalles:</p>
-            <ul>
-                <li><strong>Nave:</strong> ${reserva.nave}</li>
-                <li><strong>Sala:</strong> ${reserva.sala}</li>
-                <li><strong>Fecha:</strong> ${fechaFormateada}</li>
-                <li><strong>Hora de inicio:</strong> ${horaInicio}</li>
-                <li><strong>Hora de fin:</strong> ${horaFin}</li>
-                <li><strong>Motivo:</strong> ${reserva.motivo}</li>
-            </ul>
-        `;
-
-        if (cambios) {
-            cuerpoCorreo += `
-                <h3>Cambios realizados:</h3>
-                <ul>
-                    ${cambios.fecha ? `<li>Fecha: ${formatearFecha(reserva.fecha)}</li>` : ''}
-                    ${cambios.horaInicio ? `<li>Hora de inicio: ${formatearHora(reserva.horaInicio)}</li>` : ''}
-                    ${cambios.horaFin ? `<li>Hora de fin: ${formatearHora(reserva.horaFin)}</li>` : ''}
-                    ${cambios.nave ? `<li>Nave: ${reserva.nave}</li>` : ''}
-                    ${cambios.sala ? `<li>Sala: ${reserva.sala}</li>` : ''}
-                    ${cambios.motivo ? `<li>Motivo: ${reserva.motivo}</li>` : ''}
-                    ${cambios.invitados ? `<li>Invitados: ${reserva.invitados.join(', ')}</li>` : ''}
-                </ul>
-            `;
-        }
-
-        cuerpoCorreo += `
-            <p>Si necesitas hacer algún cambio, puedes editar tu reserva utilizando la contraseña que proporcionaste al crear la reserva.</p>
-            <p>Saludos,</p>
-            <p>Equipo de Reservas</p>
-        `;
-
+        const titulo = esActualizacion ? 'Actualización de Reserva' : 'Confirmación de Reserva';
+        const mensaje = esActualizacion ? 'Tu reserva ha sido actualizada con los siguientes detalles:' : 'Tu reserva ha sido confirmada con los siguientes detalles:';
+        
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: reserva.correo,
-            subject: `${cambios ? 'Actualización' : 'Confirmación'} de Reserva - ${reserva.nave} - ${reserva.sala}`,
-            html: cuerpoCorreo
+            subject: `${titulo} - ${reserva.ubicacion} - ${reserva.sala}`,
+            html: `
+                <h2>${titulo}</h2>
+                <p>Hola ${reserva.nombre},</p>
+                <p>${mensaje}</p>
+                <ul>
+                    <li><strong>Nave:</strong> ${reserva.ubicacion}</li>
+                    <li><strong>Sala:</strong> ${reserva.sala}</li>
+                    <li><strong>Fecha:</strong> ${reserva.fecha}</li>
+                    <li><strong>Hora de inicio:</strong> ${reserva.horaInicio}</li>
+                    <li><strong>Hora de fin:</strong> ${reserva.horaFin}</li>
+                    <li><strong>Motivo:</strong> ${reserva.motivo}</li>
+                    <li><strong>Contraseña:</strong> ${reserva.contraseña}</li>
+                </ul>
+                <p>Guarda esta contraseña para futuras modificaciones o cancelaciones de tu reserva.</p>
+                <p>Saludos,</p>
+                <p>Equipo de Sistemas</p>
+            `
         };
 
+        console.log('Enviando correo con las siguientes opciones:', mailOptions);
         await transporter.sendMail(mailOptions);
-        console.log('Correo de confirmación enviado a:', reserva.correo);
+        console.log('Correo de confirmación enviado exitosamente');
     } catch (error) {
         console.error('Error al enviar correo de confirmación:', error);
         throw error;
@@ -91,20 +74,30 @@ const enviarConfirmacionReserva = async (reserva, cambios = null) => {
 // Función para enviar invitaciones
 const enviarInvitaciones = async (reserva) => {
     try {
+        console.log('Preparando envío de invitaciones para la reserva:', reserva);
         const fechaFormateada = formatearFecha(reserva.fecha);
         const horaInicio = formatearHora(reserva.horaInicio);
         const horaFin = formatearHora(reserva.horaFin);
 
+        if (!reserva.invitados || reserva.invitados.length === 0) {
+            console.log('No hay invitados para enviar');
+            return;
+        }
+
+        console.log('Lista de invitados:', reserva.invitados);
+        const destinatarios = reserva.invitados.join(', ');
+        console.log('Destinatarios formateados:', destinatarios);
+
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: reserva.invitados.join(', '),
-            subject: `Invitación a Reunión - ${reserva.nave} - ${reserva.sala}`,
+            to: destinatarios,
+            subject: `Invitación a Reunión - ${reserva.ubicacion} - ${reserva.sala}`,
             html: `
                 <h2>Invitación a Reunión</h2>
                 <p>Has sido invitado a una reunión por ${reserva.nombre}</p>
                 <p>Detalles de la reunión:</p>
                 <ul>
-                    <li><strong>Nave:</strong> ${reserva.nave}</li>
+                    <li><strong>Nave:</strong> ${reserva.ubicacion}</li>
                     <li><strong>Sala:</strong> ${reserva.sala}</li>
                     <li><strong>Fecha:</strong> ${fechaFormateada}</li>
                     <li><strong>Hora de inicio:</strong> ${horaInicio}</li>
@@ -114,10 +107,48 @@ const enviarInvitaciones = async (reserva) => {
             `
         };
 
+        console.log('Enviando correo con las siguientes opciones:', mailOptions);
         await transporter.sendMail(mailOptions);
-        console.log('Invitaciones enviadas a:', reserva.invitados.join(', '));
+        console.log('Invitaciones enviadas exitosamente a:', destinatarios);
     } catch (error) {
         console.error('Error al enviar invitaciones:', error);
+        throw error;
+    }
+};
+
+// Función para enviar confirmación de cancelación de reserva
+const enviarConfirmacionCancelacion = async (reserva) => {
+    try {
+        // Verificando disponibilidad
+        
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: reserva.correo,
+            subject: `Cancelación de Reserva - ${reserva.ubicacion} - ${reserva.sala}`,
+            html: `
+                <h2>Cancelación de Reserva</h2>
+                <p>Hola ${reserva.nombre},</p>
+                <p>Tu reserva ha sido cancelada exitosamente.</p>
+                <p>Detalles de la reserva cancelada:</p>
+                <ul>
+                    <li><strong>Nave:</strong> ${reserva.ubicacion}</li>
+                    <li><strong>Sala:</strong> ${reserva.sala}</li>
+                    <li><strong>Fecha:</strong> ${reserva.fecha}</li>
+                    <li><strong>Hora de inicio:</strong> ${reserva.horaInicio}</li>
+                    <li><strong>Hora de fin:</strong> ${reserva.horaFin}</li>
+                    <li><strong>Motivo:</strong> ${reserva.motivo}</li>
+                </ul>
+                <p>Si esta cancelación fue realizada por error, por favor realiza una nueva reserva.</p>
+                <p>Saludos,</p>
+                <p>Equipo de Sistemas</p>
+            `
+        };
+
+        // Enviando correo
+        await transporter.sendMail(mailOptions);
+        // Correo de cancelación enviado exitosamente
+    } catch (error) {
+        // Error al enviar correo de cancelación
         throw error;
     }
 };
@@ -125,5 +156,6 @@ const enviarInvitaciones = async (reserva) => {
 module.exports = {
     enviarConfirmacionReserva,
     enviarInvitaciones,
+    enviarConfirmacionCancelacion,
     formatearHora
 };

@@ -19,7 +19,7 @@ const authMiddleware = (req, res, next) => {
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
-            console.log('❌ No se proporcionó token de autenticación');
+            // No se proporcionó token
             return res.status(401).json({
                 success: false,
                 message: 'No se proporcionó token de autenticación',
@@ -31,7 +31,7 @@ const authMiddleware = (req, res, next) => {
         const token = authHeader.split(' ')[1];
 
         if (!token) {
-            console.log('❌ Formato de token inválido');
+            // Formato de token inválido
             return res.status(401).json({
                 success: false,
                 message: 'Formato de token inválido',
@@ -41,13 +41,13 @@ const authMiddleware = (req, res, next) => {
 
         // Verificar y decodificar el token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('✅ Token verificado para usuario:', decoded.email);
+        // Token verificado correctamente
 
         // Agregar la información del usuario a la solicitud
         req.user = decoded;
         next();
     } catch (error) {
-        console.error('❌ Error en authMiddleware:', error.message);
+        // Error en la autenticación
 
         // Manejar diferentes tipos de errores de JWT
         if (error.name === 'TokenExpiredError') {

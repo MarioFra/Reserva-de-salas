@@ -4,12 +4,13 @@
  */
 
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 /**
  * Esquema de Administrador
  * Define los campos y sus validaciones para el modelo de administrador
  */
-const adminSchema = new mongoose.Schema({
+const AdminSchema = new mongoose.Schema({
     // Nombre completo del administrador
     nombre: {
         type: String,
@@ -26,7 +27,7 @@ const adminSchema = new mongoose.Schema({
         unique: true,
         trim: true,
         lowercase: true,
-        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingresa un email válido']
+        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingrese un email válido']
     },
 
     // Contraseña hasheada
@@ -52,14 +53,41 @@ const adminSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+
+    // Rol del administrador
+    role: {
+        type: String,
+        default: 'admin'
     }
+}, {
+    timestamps: true
 });
 
 // Middleware para actualizar la fecha de modificación antes de guardar
-adminSchema.pre('save', function (next) {
-    this.updatedAt = Date.now();
-    next();
+AdminSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next();
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
+// Método para ocultar la contraseña en las respuestas JSON
+AdminSchema.methods.toJSON = function () {
+    const admin = this.toObject();
+    delete admin.password;
+    return admin;
+};
+
+// Method to compare password
+AdminSchema.methods.comparePassword = async function (candidatePassword) {
+    return bcrypt.compare(candidatePassword, this.password);
+};
+
 // Exportar el modelo
-module.exports = mongoose.model('Admin', adminSchema); 
+module.exports = mongoose.model('Admin', AdminSchema); 

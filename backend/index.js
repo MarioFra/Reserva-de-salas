@@ -16,6 +16,7 @@ const reservationRoutes = require('./routes/reservationRoutes');
 const historyRoutes = require('./routes/historyRoutes');
 const faqRoutes = require('./routes/faqRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 // Inicialización de la aplicación Express
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api/reservations', reservationRoutes); // Rutas para gestión de reser
 app.use('/api/history', historyRoutes);  // Rutas para historial de acciones
 app.use('/api/faq', faqRoutes);         // Rutas para preguntas frecuentes
 app.use('/api/admin', adminRoutes);     // Rutas para administradores
+app.use('/api/dashboard', dashboardRoutes);
 
 /**
  * Middleware para manejo de errores
@@ -77,4 +79,5 @@ app.listen(PORT, () => {
   console.log('- /api/history');
   console.log('- /api/faq');
   console.log('- /api/admin');
+  console.log('- /api/dashboard');
 });

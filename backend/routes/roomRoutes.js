@@ -2,29 +2,31 @@
 const express = require('express');
 const Room = require('../models/Room');
 const router = express.Router();
+const roomController = require('../controllers/roomController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-// Crear una nueva sala
-router.post('/', async (req, res) => {
-  const { nombre, ubicación } = req.body;
-
-  try {
-    const newRoom = new Room({ nombre, ubicación });
-    const roomSaved = await newRoom.save();
-    res.status(201).json(roomSaved);
-  } catch (err) {
-    res.status(500).json({ message: 'Error al crear la sala', error: err });
-  }
+// Middleware para asegurar respuestas JSON
+router.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+  next();
 });
 
-// Obtener todas las salas
+// Ruta pública para obtener todas las salas
 router.get('/', async (req, res) => {
   try {
-    const rooms = await Room.find();
-    res.status(200).json(rooms);
-  } catch (err) {
-    res.status(500).json({ message: 'Error al obtener las salas', error: err });
+    const salas = await Room.find();
+    res.json(salas);
+  } catch (error) {
+    // Error al obtener las salas
+    res.status(500).json({ message: 'Error al obtener las salas' });
   }
 });
+
+// Las demás rutas que requieren autenticación
+router.use(authMiddleware);
+
+// Crear una nueva sala
+router.post('/', roomController.createRoom);
 
 // Obtener una sala por ID
 router.get('/:id', async (req, res) => {
@@ -40,37 +42,9 @@ router.get('/:id', async (req, res) => {
 });
 
 // Actualizar una sala
-router.put('/:id', async (req, res) => {
-  const { nombre, ubicación } = req.body;
-
-  try {
-    const updatedRoom = await Room.findByIdAndUpdate(
-      req.params.id,
-      { nombre, ubicación },
-      { new: true }
-    );
-
-    if (!updatedRoom) {
-      return res.status(404).json({ message: 'Sala no encontrada' });
-    }
-
-    res.status(200).json(updatedRoom);
-  } catch (err) {
-    res.status(500).json({ message: 'Error al actualizar la sala', error: err });
-  }
-});
+router.put('/:id', roomController.updateRoom);
 
 // Eliminar una sala
-router.delete('/:id', async (req, res) => {
-  try {
-    const deletedRoom = await Room.findByIdAndDelete(req.params.id);
-    if (!deletedRoom) {
-      return res.status(404).json({ message: 'Sala no encontrada' });
-    }
-    res.status(200).json({ message: 'Sala eliminada exitosamente' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error al eliminar la sala', error: err });
-  }
-});
+router.delete('/:id', roomController.deleteRoom);
 
 module.exports = router;

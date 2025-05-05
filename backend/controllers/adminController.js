@@ -1,16 +1,31 @@
 const Admin = require('../models/Admin');
 const bcrypt = require('bcryptjs');
 
-// Crear nuevo administrador
-const createAdmin = async (req, res, next) => {
+// Obtener todos los administradores
+exports.getAdmins = async (req, res) => {
+    try {
+        const admins = await Admin.find({}, '-password');
+        return res.status(200).json(admins);
+    } catch (error) {
+        console.error('Error en getAdmins:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al obtener los administradores',
+            error: error.message
+        });
+    }
+};
+
+// Crear un nuevo administrador
+exports.createAdmin = async (req, res) => {
     try {
         const { nombre, email, password } = req.body;
 
         // Validar campos requeridos
         if (!nombre || !email || !password) {
             return res.status(400).json({
-                message: 'Todos los campos son requeridos',
-                error: 'Campos incompletos'
+                success: false,
+                message: 'Todos los campos son requeridos'
             });
         }
 
@@ -18,70 +33,128 @@ const createAdmin = async (req, res, next) => {
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) {
             return res.status(400).json({
-                message: 'El email ya está registrado',
-                error: 'Email duplicado'
+                success: false,
+                message: 'El email ya está registrado'
             });
         }
 
-        // Hashear la contraseña
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Encriptar la contraseña
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         // Crear nuevo administrador
         const newAdmin = new Admin({
             nombre,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            isActive: true
         });
 
         await newAdmin.save();
-        res.status(201).json({
+
+        // No enviar la contraseña en la respuesta
+        const adminResponse = {
+            _id: newAdmin._id,
+            nombre: newAdmin.nombre,
+            email: newAdmin.email,
+            isActive: newAdmin.isActive,
+            createdAt: newAdmin.createdAt
+        };
+
+        return res.status(201).json({
+            success: true,
             message: 'Administrador creado exitosamente',
-            admin: {
-                id: newAdmin._id,
-                nombre: newAdmin.nombre,
-                email: newAdmin.email
-            }
+            admin: adminResponse
         });
     } catch (error) {
         console.error('Error en createAdmin:', error);
-        res.status(500).json({
-            message: 'Error al crear administrador',
+        return res.status(500).json({
+            success: false,
+            message: 'Error al crear el administrador',
             error: error.message
         });
     }
 };
 
-// Obtener todos los administradores
-const getAdmins = async (req, res, next) => {
+// Actualizar un administrador
+exports.updateAdmin = async (req, res) => {
     try {
-        const admins = await Admin.find().select('-password');
-        res.json(admins);
+        const { nombre, password, isActive } = req.body;
+        const adminId = req.params.id;
+
+        if (!adminId) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID de administrador no proporcionado'
+            });
+        }
+
+        const updateData = { nombre, isActive };
+
+        // Si se proporciona una nueva contraseña, encriptarla
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            updateData.password = await bcrypt.hash(password, salt);
+        }
+
+        const updatedAdmin = await Admin.findByIdAndUpdate(
+            adminId,
+            updateData,
+            { new: true }
+        ).select('-password');
+
+        if (!updatedAdmin) {
+            return res.status(404).json({
+                success: false,
+                message: 'Administrador no encontrado'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Administrador actualizado exitosamente',
+            admin: updatedAdmin
+        });
     } catch (error) {
-        console.error('Error en getAdmins:', error);
-        res.status(500).json({
-            message: 'Error al obtener administradores',
+        console.error('Error en updateAdmin:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al actualizar el administrador',
             error: error.message
         });
     }
 };
 
-// Eliminar administrador
-const deleteAdmin = async (req, res, next) => {
+// Eliminar un administrador
+exports.deleteAdmin = async (req, res) => {
     try {
-        const { id } = req.params;
-        await Admin.findByIdAndDelete(id);
-        res.json({ message: 'Administrador eliminado exitosamente' });
+        const adminId = req.params.id;
+
+        if (!adminId) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID de administrador no proporcionado'
+            });
+        }
+
+        const deletedAdmin = await Admin.findByIdAndDelete(adminId);
+        if (!deletedAdmin) {
+            return res.status(404).json({
+                success: false,
+                message: 'Administrador no encontrado'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Administrador eliminado exitosamente'
+        });
     } catch (error) {
         console.error('Error en deleteAdmin:', error);
-        res.status(500).json({
-            message: 'Error al eliminar administrador',
+        return res.status(500).json({
+            success: false,
+            message: 'Error al eliminar el administrador',
             error: error.message
         });
     }
-};
-
-module.exports = {
-    createAdmin,
-    getAdmins,
-    deleteAdmin
 }; 

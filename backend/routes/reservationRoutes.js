@@ -1,67 +1,22 @@
 const express = require('express');
 const Reservation = require('../models/Reservation');
 const router = express.Router();
-const { enviarConfirmacionReserva, enviarInvitaciones } = require('../utils/emailService');
+const { enviarConfirmacionReserva, enviarInvitaciones, enviarConfirmacionCancelacion } = require('../utils/emailService');
+const { verificarDisponibilidad, createReservation } = require('../controllers/reservationController');
 
 // Ruta para crear una reserva
-router.post('/', async (req, res) => {
-  console.log("Datos recibidos para nueva reserva:", req.body);
-  const { nave, sala, fecha, horaInicio, horaFin, nombre, correo, motivo, invitados, contraseña } = req.body;
-
-  try {
-    // Validar que la fecha tenga el formato correcto (YYYY-MM-DD)
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-      return res.status(400).json({ error: "Formato de fecha inválido. Use YYYY-MM-DD" });
-    }
-
-    // Filtrar invitados vacíos
-    const invitadosFiltrados = (invitados || []).filter(invitado => invitado && invitado.trim() !== '');
-
-    const newReservation = new Reservation({
-      nave,
-      sala,
-      fecha: fecha, // Guardamos la fecha como string
-      horaInicio,
-      horaFin,
-      nombre,
-      correo,
-      motivo,
-      invitados: invitadosFiltrados,
-      contraseña,
-      estado: "activa"
-    });
-
-    console.log("Nueva reserva a guardar:", newReservation);
-    const savedReservation = await newReservation.save();
-    console.log("Reserva guardada exitosamente:", savedReservation);
-
-    // Enviar correos (ahora no lanzan errores)
-    try {
-      await enviarConfirmacionReserva(savedReservation);
-      if (invitadosFiltrados.length > 0) {
-        await enviarInvitaciones(savedReservation);
-      }
-    } catch (emailError) {
-      console.error("Error al enviar correos, pero la reserva se creó:", emailError);
-    }
-
-    res.status(201).json(savedReservation);
-  } catch (error) {
-    console.error("Error al crear la reserva:", error);
-    res.status(500).json({ error: "Hubo un error al crear la reserva", details: error.message });
-  }
-});
+router.post('/', createReservation);
 
 // Ruta para obtener reservas con filtros
 router.get('/', async (req, res) => {
   try {
-    console.log("Recibida solicitud GET con filtros:", req.query);
+    // Procesando solicitud GET con filtros
 
     // Construir el filtro de MongoDB
     const filtro = {};
 
-    if (req.query.nave) {
-      filtro.nave = req.query.nave;
+    if (req.query.ubicacion) {
+      filtro.ubicacion = req.query.ubicacion;
     }
 
     if (req.query.sala) {
@@ -76,8 +31,7 @@ router.get('/', async (req, res) => {
         return res.status(400).json({ message: "Formato de fecha inválido. Use YYYY-MM-DD" });
       }
 
-      console.log("Fecha seleccionada:", fechaSeleccionada);
-      console.log("Tipo de filtro:", tipoFiltro);
+      // Procesando filtro de fecha
 
       switch (tipoFiltro) {
         case 'dia':
@@ -112,11 +66,11 @@ router.get('/', async (req, res) => {
       }
     }
 
-    console.log("Filtro de MongoDB:", JSON.stringify(filtro, null, 2));
+    // Filtro de MongoDB construido
 
     // Obtener las reservas con los filtros aplicados
     const reservas = await Reservation.find(filtro);
-    console.log(`Se encontraron ${reservas.length} reservas con los filtros aplicados`);
+    // Reservas encontradas con los filtros aplicados
 
     // Formatear las reservas para el frontend
     const reservasFormateadas = reservas.map(reserva => {
@@ -126,24 +80,25 @@ router.get('/', async (req, res) => {
           fecha: reserva.fecha,
           horaInicio: reserva.horaInicio,
           horaFin: reserva.horaFin,
-          nave: reserva.nave,
+          ubicacion: reserva.ubicacion,
           sala: reserva.sala,
           nombre: reserva.nombre,
           correo: reserva.correo,
           motivo: reserva.motivo,
           invitados: reserva.invitados,
-          estado: reserva.estado
+          estado: reserva.estado,
+          contraseña: reserva.contraseña
         };
       } catch (error) {
-        console.error("Error al procesar reserva:", error);
+        // Error al procesar reserva
         return null;
       }
     }).filter(reserva => reserva !== null);
 
-    console.log("Primeras 3 reservas formateadas:", reservasFormateadas.slice(0, 3));
+    // Reservas formateadas correctamente
     res.json(reservasFormateadas);
   } catch (error) {
-    console.error("Error al obtener las reservas:", error);
+    // Error al obtener las reservas
     res.status(500).json({ message: error.message });
   }
 });
@@ -186,7 +141,8 @@ router.put('/:id/cancelar', async (req, res) => {
 
 // Ruta para modificar una reserva
 router.put('/:id/editar', async (req, res) => {
-  const { contraseña, nave, sala, fecha, horaInicio, horaFin, motivo, invitados, cambios } = req.body;
+  const { contraseña, ubicacion, sala, fecha, horaInicio, horaFin, motivo, invitados, cambios } = req.body;
+  const token = req.headers.authorization?.split(' ')[1];
 
   try {
     // Buscar la reserva por ID
@@ -194,16 +150,18 @@ router.put('/:id/editar', async (req, res) => {
 
     if (!reservation) return res.status(404).json({ message: 'Reserva no encontrada' });
 
-    // Validar la contraseña antes de editar
-    if (reservation.contraseña !== contraseña) {
-      return res.status(403).json({ message: 'Contraseña incorrecta' });
+    // Solo validar contraseña si no es un admin
+    if (!token) {
+      if (reservation.contraseña !== contraseña) {
+        return res.status(403).json({ message: 'Contraseña incorrecta' });
+      }
     }
 
     // Filtrar invitados vacíos
     const invitadosFiltrados = (invitados || []).filter(invitado => invitado && invitado.trim() !== '');
 
     // Actualizar los campos de la reserva
-    if (nave) reservation.nave = nave;
+    if (ubicacion) reservation.ubicacion = ubicacion;
     if (sala) reservation.sala = sala;
     if (fecha) reservation.fecha = fecha;
     if (horaInicio) reservation.horaInicio = horaInicio;
@@ -215,12 +173,13 @@ router.put('/:id/editar', async (req, res) => {
 
     // Enviar correo de actualización con los cambios
     try {
-      await enviarConfirmacionReserva(updatedReservation, cambios);
+      // Pasar true como segundo parámetro para indicar que es una actualización
+      await enviarConfirmacionReserva(updatedReservation, true);
       if (invitadosFiltrados.length > 0) {
         await enviarInvitaciones(updatedReservation);
       }
     } catch (emailError) {
-      console.error("Error al enviar correos de actualización:", emailError);
+      // Error al enviar correos de actualización
     }
 
     res.status(200).json({ message: 'Reserva actualizada exitosamente', data: updatedReservation });
@@ -232,6 +191,7 @@ router.put('/:id/editar', async (req, res) => {
 // Ruta para eliminar una reserva
 router.delete('/:id', async (req, res) => {
   const { contraseña } = req.body;
+  const token = req.headers.authorization?.split(' ')[1];
 
   try {
     // Buscar la reserva por ID
@@ -239,13 +199,26 @@ router.delete('/:id', async (req, res) => {
 
     if (!reservation) return res.status(404).json({ message: 'Reserva no encontrada' });
 
-    // Validar la contraseña antes de eliminar
-    if (reservation.contraseña !== contraseña) {
-      return res.status(403).json({ message: 'Contraseña incorrecta' });
+    // Solo validar contraseña si no es un admin
+    if (!token) {
+      if (reservation.contraseña !== contraseña) {
+        return res.status(403).json({ message: 'Contraseña incorrecta' });
+      }
     }
 
+    // Guardar una copia de la reserva antes de eliminarla para enviar el correo
+    const reservaEliminada = { ...reservation.toObject() };
+    
     // Eliminar la reserva
     await Reservation.findByIdAndDelete(req.params.id);
+    
+    // Enviar correo de confirmación de cancelación
+    try {
+      await enviarConfirmacionCancelacion(reservaEliminada);
+    } catch (emailError) {
+      // Error al enviar correo de cancelación
+      // Continuamos con la respuesta exitosa aunque el correo falle
+    }
 
     res.status(200).json({ message: 'Reserva eliminada exitosamente' });
   } catch (error) {
@@ -257,27 +230,54 @@ router.delete('/:id', async (req, res) => {
 router.post('/:id/verificar-password', async (req, res) => {
   try {
     const { contraseña } = req.body;
-    console.log('ID de reserva recibido:', req.params.id);
-    console.log('Contraseña recibida:', contraseña);
-
+    // Verificando ID y contraseña recibidos
     const reserva = await Reservation.findById(req.params.id);
-    console.log('Reserva encontrada:', reserva);
 
     if (!reserva) {
-      console.log('Reserva no encontrada para el ID:', req.params.id);
+      // Reserva no encontrada
       return res.status(404).json({ message: 'Reserva no encontrada' });
     }
 
     if (reserva.contraseña !== contraseña) {
-      console.log('Contraseña incorrecta para la reserva:', reserva._id);
+      // Contraseña incorrecta
       return res.status(403).json({ message: 'Contraseña incorrecta' });
     }
 
-    console.log('Contraseña verificada correctamente para la reserva:', reserva._id);
+    // Contraseña verificada correctamente
     res.status(200).json({ message: 'Contraseña correcta' });
   } catch (error) {
-    console.error('Error al verificar contraseña:', error);
+    // Error al verificar contraseña
     res.status(500).json({ message: 'Error al verificar la contraseña' });
+  }
+});
+
+// Ruta para verificar disponibilidad
+router.post('/verificar-disponibilidad', async (req, res) => {
+  try {
+    const { ubicacion, sala, fecha, horaInicio, horaFin } = req.body;
+    // Verificando disponibilidad con los datos recibidos
+
+    if (!ubicacion || !sala || !fecha || !horaInicio || !horaFin) {
+      return res.status(400).json({
+        disponible: false,
+        mensaje: 'Todos los campos son requeridos para verificar disponibilidad'
+      });
+    }
+
+    const disponible = await verificarDisponibilidad(ubicacion, sala, fecha, horaInicio, horaFin);
+    console.log('Resultado de disponibilidad:', disponible);
+
+    res.json({
+      disponible,
+      mensaje: disponible ? 'La sala está disponible' : 'La sala no está disponible en el horario seleccionado'
+    });
+  } catch (error) {
+    console.error('Error al verificar disponibilidad:', error);
+    res.status(500).json({
+      disponible: false,
+      mensaje: 'Error al verificar disponibilidad',
+      error: error.message
+    });
   }
 });
 
