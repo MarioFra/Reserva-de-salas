@@ -219,11 +219,7 @@ npm run build
 
 - Verifica las credenciales en el archivo `.env`
 - Si usas Gmail, asegúrate de habilitar "Acceso de aplicaciones menos seguras" o usar contraseñas de aplicación
+- En este caso seria conectarlo con la aplicacion en Azure.
 
-## Licencia
 
-Este proyecto está licenciado bajo [Licencia MIT](LICENSE).
 
-## Contacto
-
-Para soporte o consultas, contacta a [tu_correo@ejemplo.com](mailto:tu_correo@ejemplo.com).
