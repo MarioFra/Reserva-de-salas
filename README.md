@@ -1,6 +1,36 @@
 # Sistema de Reserva de Salas de Juntas
 
-Este proyecto es un sistema completo para la gestión y reserva de salas de juntas. Permite a los usuarios reservar salas, recibir confirmaciones por correo electrónico, y a los administradores gestionar salas, reservas y usuarios.
+Este proyecto es un sistema para la gestión y reserva de salas de juntas. Permite a los usuarios reservar salas, recibir confirmaciones por correo electrónico, y a los administradores gestionar salas, reservas y usuarios.
+
+## Plan de Desarrollo
+
+### 1. Desarrollo del Backend
+
+Se desarrolló la lógica del servidor utilizando Node.js y Express para manejar las reservas de salas y verificar la disponibilidad en tiempo real. La base de datos MongoDB se utilizó para almacenar las reservas, usuarios y la disponibilidad de las salas.
+
+#### Componentes Implementados:
+
+- **Estructura MVC**: Organización del código en Modelos, Vistas y Controladores para una mejor mantenibilidad
+- **API RESTful**: Endpoints para gestión de salas, reservas y usuarios
+- **Autenticación**: Sistema de autenticación con JWT para proteger rutas de administración
+- **Validación de Datos**: Verificación de disponibilidad en tiempo real para evitar conflictos de horarios
+- **Servicio de Correo**: Implementación de Nodemailer para envío de confirmaciones, actualizaciones y cancelaciones
+- **Middleware de Seguridad**: Protección de rutas y validación de permisos
+- **Controladores Especializados**: Lógica separada para cada entidad del sistema (salas, reservas, usuarios, etc.)
+
+### 2. Desarrollo del Frontend
+
+Utilizando React.js, se creó una interfaz amigable y accesible para los usuarios, permitiéndoles consultar la disponibilidad de las salas y realizar reservas. Se integraron librerías para ofrecer una experiencia de usuario moderna y eficiente, priorizando la implementación de un diseño responsivo que se ajusta a diferentes tamaños de pantalla.
+
+#### Componentes Implementados:
+
+- **Interfaz de Usuario Intuitiva**: Diseño centrado en el usuario con navegación clara
+- **Calendario Interactivo**: Visualización de reservas con filtros por ubicación y sala
+- **Formularios de Reserva**: Interfaz para crear y editar reservas con validación en tiempo real
+- **Panel de Administración**: Dashboard completo para gestión de salas, reservas y usuarios
+- **Sistema de Navegación**: Implementación de breadcrumbs para mejorar la experiencia de usuario
+- **Diseño Responsivo**: Adaptación a diferentes dispositivos y tamaños de pantalla
+- **Optimización de Rendimiento**: Eliminación de console.log y archivos no utilizados
 
 ## Características
 
@@ -11,9 +41,34 @@ Este proyecto es un sistema completo para la gestión y reserva de salas de junt
 - **Verificación de Disponibilidad**: Sistema que previene conflictos de horarios al crear o editar reservas
 - **Autenticación Segura**: Sistema de autenticación con JWT para el acceso al panel de administración
 
+## Mejoras Implementadas
+
+### Verificación de Horarios Disponibles
+
+Se implementó un sistema de verificación de horarios disponibles al editar una reserva. El sistema consulta las reservas existentes para la sala y fecha seleccionadas, y muestra solo los horarios disponibles en los selectores de hora de inicio y hora fin, deshabilitando aquellos que ya están ocupados por otras reservas. Esto mejora la experiencia de usuario al evitar conflictos de horarios durante la edición.
+
+### Sistema de Notificaciones por Correo
+
+Se desarrolló un sistema completo de notificaciones por correo electrónico que incluye:
+
+- **Confirmación de Reservas Nuevas**: Envío de correos con los detalles de la reserva cuando se crea una nueva.
+- **Confirmación de Actualizaciones**: Correos con título diferenciado ("Actualización de Reserva") cuando se modifica una reserva existente.
+- **Confirmación de Cancelaciones**: Notificación automática cuando se cancela una reserva.
+
+### Navegación Mejorada
+
+- **Sistema de Breadcrumbs**: Implementación de migas de pan en el panel de administrador que muestran la ruta jerárquica actual (Dashboard > Sección actual).
+- **Corrección de Rutas**: Optimización de la navegación en el dashboard de administrador para que los botones de Gestión de salas, Gestión de reservas y Gestión de usuarios funcionen correctamente.
+
+### Optimización de Rendimiento
+
+- **Eliminación de Console.log**: Se eliminaron todos los console.log tanto del frontend como del backend, reemplazándolos por comentarios descriptivos para mejorar el rendimiento.
+- **Limpieza de Código**: Se identificaron y eliminaron archivos no utilizados como Reservar.css para mantener el código más limpio.
+
 ## Tecnologías Utilizadas
 
 ### Backend
+
 - Node.js
 - Express.js
 - MongoDB (con Mongoose)
@@ -21,6 +76,7 @@ Este proyecto es un sistema completo para la gestión y reserva de salas de junt
 - Nodemailer
 
 ### Frontend
+
 - React.js
 - React Bootstrap
 - React Big Calendar
@@ -77,12 +133,14 @@ Si necesitas modificar la URL de la API, edita el archivo de configuración o la
 ### 4. Iniciar la Aplicación en Modo Desarrollo
 
 #### Backend
+
 ```bash
 cd backend
 npm run dev  # O 'npm start' si no tienes un script de desarrollo
 ```
 
 #### Frontend
+
 ```bash
 cd frontend/salas
 npm start
@@ -105,11 +163,11 @@ npm run build
 
 ```javascript
 // En backend/index.js
-const path = require('path');
-app.use(express.static(path.join(__dirname, '../frontend/salas/build')));
+const path = require("path");
+app.use(express.static(path.join(__dirname, "../frontend/salas/build")));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/salas/build', 'index.html'));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/salas/build", "index.html"));
 });
 ```
 
@@ -127,6 +185,7 @@ npm start
 2. Configura un proxy para redirigir las peticiones API al backend:
 
 Ejemplo para Nginx:
+
 ```
 server {
     listen 80;
@@ -176,8 +235,8 @@ db.admins.insertOne({
   nombre: "Admin Principal",
   email: "admin@ejemplo.com",
   password: "$2b$10$...", // Contraseña hasheada con bcrypt
-  isActive: true
-})
+  isActive: true,
+});
 ```
 
 ### Crear Salas Iniciales
@@ -219,7 +278,11 @@ npm run build
 
 - Verifica las credenciales en el archivo `.env`
 - Si usas Gmail, asegúrate de habilitar "Acceso de aplicaciones menos seguras" o usar contraseñas de aplicación
-- En este caso seria conectarlo con la aplicacion en Azure.
 
+## Licencia
 
+Este proyecto está licenciado bajo [Licencia MIT](LICENSE).
 
+## Contacto
+
+Para soporte o consultas, contacta a [tu_correo@ejemplo.com](mailto:tu_correo@ejemplo.com).
