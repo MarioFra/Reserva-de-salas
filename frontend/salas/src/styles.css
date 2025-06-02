@@ -1,0 +1,54 @@
+/* Estilos para los enlaces de navegación */
+.navbar-nav .nav-link {
+  font-size: 18px;
+  /* Tamaño de texto para las opciones */
+  color: white;
+  /* Color del texto */
+  text-align: align;
+  border-radius: 10px;
+  /* Bordes redondeados */
+  padding: 15px 20px;
+  /* Espaciado dentro de cada enlace */
+  transition: all 0.2s ease;
+  /* Transición suave para efectos de hover */
+}
+
+/* Efecto hover: cambia el color de fondo y el borde */
+.navbar-nav .nav-link:hover {
+  background-color: rgb(132, 145, 173);
+  /* Fondo al pasar el cursor */
+  color: white;
+  /* Color del texto cuando pasa el cursor */
+}
+
+/* Efecto cuando la opción está activa (seleccionada) */
+.navbar-nav .nav-link.active {
+  background-color: rgb(2, 59, 121);
+  color: white;
+}
+
+/* Añadir un pequeño espacio entre los elementos */
+.nav-item {
+  margin-bottom: 10px;
+}
+
+/* Estilos para los selectores */
+.form-select:focus,
+.form-control:focus {
+  box-shadow: none;
+  border-color: #ced4da;
+  outline: none;
+}
+
+/* Eliminar el contorno azul de los selectores cuando están abiertos */
+.form-select:focus-visible,
+.form-control:focus-visible {
+  outline: none;
+}
+
+/* Estilo para los selectores cuando están abiertos */
+.form-select:active,
+.form-control:active {
+  border-color: #ced4da;
+  box-shadow: none;
+}

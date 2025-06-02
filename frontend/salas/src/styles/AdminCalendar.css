@@ -1,0 +1,168 @@
+.reservas-content {
+    padding: 2rem;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.leyenda-colores {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.leyenda-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.leyenda-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.leyenda-texto {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.calendario-filtros {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.calendario-filtros .form-label {
+    color: #2c3e50;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.calendario-filtros .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 1rem;
+    color: #34495e;
+    font-size: 0.95rem;
+}
+
+.calendario-filtros .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.calendario-wrapper {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para react-big-calendar */
+.rbc-calendar {
+    min-height: 600px;
+}
+
+.rbc-toolbar {
+    margin-bottom: 1.5rem;
+}
+
+.rbc-toolbar button {
+    color: #2c3e50;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.rbc-toolbar button:hover {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.rbc-toolbar button.rbc-active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.rbc-header {
+    color: #2c3e50;
+    font-weight: 600;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+.rbc-day-bg+.rbc-day-bg,
+.rbc-month-row+.rbc-month-row {
+    border-color: #dee2e6;
+}
+
+.rbc-today {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.rbc-event {
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: none !important;
+    opacity: 0.9;
+    color: #000000 !important;
+}
+
+.rbc-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    opacity: 1;
+}
+
+/* Colores específicos para cada nave */
+.rbc-event[data-nave="Nave 1"] {
+    background-color: #4A90E2 !important;
+    color: #000000 !important;
+}
+
+.rbc-event[data-nave="Nave 4"] {
+    background-color: #50E3C2 !important;
+    color: #000000 !important;
+}
+
+.rbc-event[data-nave="Nave no especificada"] {
+    background-color: #B8B8B8 !important;
+    color: #000000 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .reservas-content {
+        padding: 1rem;
+    }
+
+    .calendario-filtros {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .rbc-toolbar {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .rbc-toolbar button {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+}

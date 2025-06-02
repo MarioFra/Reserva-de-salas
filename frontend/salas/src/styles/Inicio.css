@@ -1,0 +1,210 @@
+/* Estilos específicos para la página de inicio */
+.inicio-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Hero Section */
+.inicio-container .hero-section {
+    background: linear-gradient(135deg, #6ba8e8 0%, #8bc1f0 100%);
+    padding: 6rem 0;
+    margin-bottom: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.inicio-container .hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,149.3C960,160,1056,160,1152,138.7C1248,117,1344,75,1392,53.3L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
+}
+
+.inicio-container .hero-button {
+    padding: 1rem 2.5rem;
+    font-size: 1.25rem;
+    border-radius: 50px;
+    background-color: #28a745 !important;
+    color: #ffffff !important;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.inicio-container .hero-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    background-color: #218838 !important;
+    color: #ffffff !important;
+}
+
+/* Animaciones */
+.animate-fade-in {
+    animation: fadeIn 1s ease-in;
+}
+
+.animate-fade-in-delay {
+    animation: fadeIn 1s ease-in 0.5s;
+    animation-fill-mode: both;
+}
+
+.animate-bounce {
+    animation: bounce 2s infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Tarjetas */
+.hover-card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Iconos */
+.icon-animate {
+    transition: all 0.3s ease;
+    font-size: 2.5rem;
+    color: #1A4B84;
+}
+
+.hover-card:hover .icon-animate {
+    transform: scale(1.1);
+}
+
+/* Estilos para las tarjetas informativas */
+.inicio-container .card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    height: 100%;
+    min-height: 200px;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+.inicio-container .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.inicio-container .card-body {
+    padding: 1.5rem;
+}
+
+/* Iconos en las tarjetas */
+.inicio-container .card .icon-animate {
+    color: #1A4B84;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.inicio-container .card-title {
+    color: #2c3e50;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.inicio-container .card-text {
+    color: #34495e;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+/* Listas en las tarjetas */
+.inicio-container .list-unstyled li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.inicio-container .list-unstyled i {
+    font-size: 1.1rem;
+    margin-right: 0.5rem;
+    color: #1A4B84;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .inicio-container .hero-section {
+        padding: 4rem 0;
+    }
+
+    .inicio-container .hero-button {
+        font-size: 1rem;
+        padding: 0.75rem 2rem;
+    }
+
+    .inicio-container .card {
+        margin-bottom: 1.5rem;
+        min-height: 180px;
+    }
+
+    .inicio-container .card-body {
+        padding: 1.25rem;
+    }
+
+    .inicio-container .card-title {
+        font-size: 1.1rem;
+    }
+
+    .inicio-container .card-text,
+    .inicio-container .list-unstyled li {
+        font-size: 0.95rem;
+    }
+}
